@@ -68,7 +68,7 @@ svg.fixedscale {
 At a minimum, I recommend this for styling:
 
 ```css
-span.page_no {
+span.toc_page_no {
     float: right;
 }
 ```
