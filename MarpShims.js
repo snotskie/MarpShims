@@ -65,9 +65,16 @@ const MarpShims = (function(){
     });
     
     let pagination = 1;
-    document.querySelectorAll("svg[data-marpit-svg] > foreignObject > section[data-marpit-pagination]").forEach((page) => {
-      page.setAttribute("data-marpit-pagination", pagination);
-      ++pagination;
+    document.querySelectorAll("svg[data-marpit-svg]").forEach((svg) => {
+      let dirty = false;
+      svg.querySelectorAll("section[data-marpit-pagination]").forEach((page) => {
+        page.setAttribute("data-marpit-pagination", pagination);
+        dirty = true;
+      });
+
+      if (dirty){
+        ++pagination;
+      }
     });
   };
 
