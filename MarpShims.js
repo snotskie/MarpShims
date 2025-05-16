@@ -105,8 +105,9 @@ const MarpShims = (function(){
   // };
 
   // usage: call MarpShims.withTOC(...) onload. In the callback function, call MarpShims.breakPages() etc. if necessary
-  pub.withTOC = function(toc, query, cb){
+  pub.withTOC = function(toc, query, cb, doBreak){
     let records = [];
+    if (typeof doBreak === "undefined") doBreak = true;
     document.querySelectorAll(query).forEach(function(e){
       const section = e.closest("section");
       const page = section.getAttribute("data-marpit-pagination");
@@ -133,8 +134,15 @@ const MarpShims = (function(){
     });
     
     cb(records);
-    for (const {line, anchor, section, page_no} of records){
+    for (const {line} of records){
       toc.appendChild(line);
+    }
+
+    if (doBreak){
+      pub.breakPages();
+    }
+    
+    for (const {line, anchor, section, page_no} of records){
       anchor.setAttribute("href", "#" + section.getAttribute("id"));
       const page = section.getAttribute("data-marpit-pagination");
       page_no.innerText = page;
