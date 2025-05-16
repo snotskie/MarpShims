@@ -132,7 +132,7 @@ const MarpShims = (function(){
       }
     });
     
-    cb();
+    cb(records);
     for (const {anchor, section, page_no} of records){
       anchor.setAttribute("href", "#" + section.getAttribute("id"));
       const page = section.getAttribute("data-marpit-pagination");
