@@ -105,16 +105,16 @@ const MarpShims = (function(){
   // };
 
   // usage: call MarpShims.withTOC(...) onload. In the callback function, call MarpShims.breakPages() etc. if necessary
-  pub.withTOC = function(toc, query, cb, doBreak){
+  pub.withTOC = function(toc, query, cb){
     let records = [];
-    if (typeof doBreak === "undefined") doBreak = true;
     document.querySelectorAll(query).forEach(function(e){
       const section = e.closest("section");
       const page = section.getAttribute("data-marpit-pagination");
       if (page){
         const toc_line = document.createElement("p");
+        toc.appendChild(toc_line);
         toc_line.classList.add("toc_line");
-        toc_line.classList.add(`toc_${e.nodeName}`);
+        toc_line.classList.add(`toc_${e.nodeName}`)
 
         const entry_a = document.createElement("a");
         toc_line.appendChild(entry_a);
@@ -125,7 +125,6 @@ const MarpShims = (function(){
         toc_line.appendChild(page_no);
         page_no.classList.add("toc_page_no");
         records.push({
-          line: toc_line,
           anchor: entry_a,
           section: section,
           page_no: page_no
@@ -133,16 +132,8 @@ const MarpShims = (function(){
       }
     });
     
-    cb(records);
-    for (const {line} of records){
-      toc.appendChild(line);
-    }
-
-    if (doBreak){
-      pub.breakPages();
-    }
-    
-    for (const {line, anchor, section, page_no} of records){
+    cb();
+    for (const {anchor, section, page_no} of records){
       anchor.setAttribute("href", "#" + section.getAttribute("id"));
       const page = section.getAttribute("data-marpit-pagination");
       page_no.innerText = page;
