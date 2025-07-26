@@ -209,7 +209,7 @@ const MarpShims = (function(){
         page_no.classList.add("toc_page_no");
 
         const target_element = document.createElement("div");
-        target_element.setAttribute("id", "@"+e.innerText.toLowerCase().replaceAll(/[^a-z]/g, ""));
+        target_element.setAttribute("id", "@"+e.innerText.toLowerCase().replaceAll(/[^a-z0-9]/g, ""));
         target_element.style.position = "absolute";
         target_element.style.top = 0;
         section.after(target_element);
@@ -237,7 +237,7 @@ const MarpShims = (function(){
       const section = e.closest("section");
 
       const target_element = document.createElement("div");
-      target_element.setAttribute("id", "@"+e.innerText.toLowerCase().replaceAll(/[^a-z]/g, ""));
+      target_element.setAttribute("id", "@"+e.innerText.toLowerCase().replaceAll(/[^a-z0-9]/g, ""));
       target_element.style.position = "absolute";
       target_element.style.top = 0;
       section.after(target_element);
