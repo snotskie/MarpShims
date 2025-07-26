@@ -31,10 +31,21 @@ const MarpShims = (function(){
   pub.breakPages = function(){
     const svgs = document.querySelectorAll("svg[data-marpit-svg]");
     for (const svg of svgs){
-      if (svg.children.length == 1){
+      if (svg.children.length == 1){ // ignore pages with a split background, ill-defined solution in that case
         const page = svg.children[0].children[0];
-        const cutoff = page.getBoundingClientRect().bottom - parseFloat(getComputedStyle(page).getPropertyValue("padding-bottom"));
-        for (let i=1; i < page.children.length; ++i){
+        const fo = page.closest("foreignObject");
+        const width = parseFloat(fo.getAttribute("width"));
+        const height = parseFloat(fo.getAttribute("height"));
+        const scale = fo.getBoundingClientRect().height / height;
+        const cutoff = page.getBoundingClientRect().bottom - scale*parseFloat(getComputedStyle(page).getPropertyValue("padding-bottom"));
+        // const cutoff = page.getBoundingClientRect().bottom - parseFloat(getComputedStyle(page).getPropertyValue("padding-bottom"));
+        let start = 1; // skip first element so we don't get in an infinite loop
+        if (["H1", "H2", "H3", "H4", "H5", "H6"].includes(page.children[0]?.nodeName)){
+          // skip the element right after a heading too, so headings aren't alone on a page
+          start = 2;
+        }
+
+        for (let i=start; i < page.children.length; ++i){
           const item = page.children[i];
           if (item.getBoundingClientRect().bottom >= cutoff){
             const resvg = svg.cloneNode();
@@ -52,7 +63,7 @@ const MarpShims = (function(){
             }
 
             svg.after(resvg);
-            return pub.breakPages(); // tail recurse
+            return pub.breakPages(); // tail recurse, restart from the top
           }
         }
       }
@@ -76,6 +87,31 @@ const MarpShims = (function(){
         ++pagination;
       }
     });
+  };
+
+  // usage: call MarpShims.growPages() on load
+  pub.growPages = function(){
+    const svgs = document.querySelectorAll("svg[data-marpit-svg]");
+    for (const svg of svgs){
+      if (svg.children.length == 1){ // ignore pages with a split background, ill-defined solution in that case
+        const page = svg.children[0].children[0];
+        const fo = page.closest("foreignObject");
+        const width = parseFloat(fo.getAttribute("width"));
+        const height = parseFloat(fo.getAttribute("height"));
+        const scale = fo.getBoundingClientRect().height / height;
+        const cutoff = page.getBoundingClientRect().bottom - scale*parseFloat(getComputedStyle(page).getPropertyValue("padding-bottom"));
+        const item = page.children[page.children.length-1];
+        const excess = item.getBoundingClientRect().bottom - cutoff;
+        if (excess > 0){
+          console.log(page);
+          const new_height = height + excess/scale + parseFloat(getComputedStyle(page).getPropertyValue("padding-bottom"));
+          svg.setAttribute("viewBox", `0 0 ${width} ${new_height}`);
+          fo.setAttribute("height", new_height);
+          svg.style.height = `${new_height}px !important`;
+          page.style.height = `${new_height}px !important`;
+        }
+      }
+    }
   };
 
   // pub.bindControls = function(nextCodes, prevCodes){
