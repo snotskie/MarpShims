@@ -212,7 +212,7 @@ const MarpShims = (function(){
         target_element.setAttribute("id", "@"+e.innerText.toLowerCase().replaceAll(/[^a-z]/g, ""));
         target_element.style.position = "absolute";
         target_element.style.top = 0;
-        section.appendChild(target_element);
+        section.after(target_element);
 
         records.push({
           anchor: entry_a,
@@ -240,7 +240,7 @@ const MarpShims = (function(){
       target_element.setAttribute("id", "@"+e.innerText.toLowerCase().replaceAll(/[^a-z]/g, ""));
       target_element.style.position = "absolute";
       target_element.style.top = 0;
-      section.appendChild(target_element);
+      section.after(target_element);
 
       const html = e.innerHTML;
       e.innerHTML = "";
