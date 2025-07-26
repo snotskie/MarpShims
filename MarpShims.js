@@ -103,7 +103,54 @@ const MarpShims = (function(){
         const item = page.children[page.children.length-1];
         const excess = item.getBoundingClientRect().bottom - cutoff;
         if (excess > 0){
-          console.log(page);
+          const new_height = height + excess/scale + parseFloat(getComputedStyle(page).getPropertyValue("padding-bottom"));
+          svg.setAttribute("viewBox", `0 0 ${width} ${new_height}`);
+          fo.setAttribute("height", new_height);
+          svg.style.height = `${new_height}px !important`;
+          page.style.height = `${new_height}px !important`;
+        }
+      }
+    }
+  };
+
+  // usage: call MarpShims.shrinkPages() on load
+  pub.shrinkPages = function(){
+    const svgs = document.querySelectorAll("svg[data-marpit-svg]");
+    for (const svg of svgs){
+      if (svg.children.length == 1){ // ignore pages with a split background, ill-defined solution in that case
+        const page = svg.children[0].children[0];
+        const fo = page.closest("foreignObject");
+        const width = parseFloat(fo.getAttribute("width"));
+        const height = parseFloat(fo.getAttribute("height"));
+        const scale = fo.getBoundingClientRect().height / height;
+        const cutoff = page.getBoundingClientRect().bottom - scale*parseFloat(getComputedStyle(page).getPropertyValue("padding-bottom"));
+        const item = page.children[page.children.length-1];
+        const excess = item.getBoundingClientRect().bottom - cutoff;
+        if (excess < 0){
+          const new_height = height + excess/scale + parseFloat(getComputedStyle(page).getPropertyValue("padding-bottom"));
+          svg.setAttribute("viewBox", `0 0 ${width} ${new_height}`);
+          fo.setAttribute("height", new_height);
+          svg.style.height = `${new_height}px !important`;
+          page.style.height = `${new_height}px !important`;
+        }
+      }
+    }
+  };
+
+  // usage: call MarpShims.stretchPages() on load
+  pub.stretchPages = function(){
+    const svgs = document.querySelectorAll("svg[data-marpit-svg]");
+    for (const svg of svgs){
+      if (svg.children.length == 1){ // ignore pages with a split background, ill-defined solution in that case
+        const page = svg.children[0].children[0];
+        const fo = page.closest("foreignObject");
+        const width = parseFloat(fo.getAttribute("width"));
+        const height = parseFloat(fo.getAttribute("height"));
+        const scale = fo.getBoundingClientRect().height / height;
+        const cutoff = page.getBoundingClientRect().bottom - scale*parseFloat(getComputedStyle(page).getPropertyValue("padding-bottom"));
+        const item = page.children[page.children.length-1];
+        const excess = item.getBoundingClientRect().bottom - cutoff;
+        if (excess != 0){
           const new_height = height + excess/scale + parseFloat(getComputedStyle(page).getPropertyValue("padding-bottom"));
           svg.setAttribute("viewBox", `0 0 ${width} ${new_height}`);
           fo.setAttribute("height", new_height);
@@ -160,17 +207,25 @@ const MarpShims = (function(){
         const page_no = document.createElement("span");
         toc_line.appendChild(page_no);
         page_no.classList.add("toc_page_no");
+
+        const target_element = document.createElement("div");
+        target_element.setAttribute("id", "@"+e.innerText.toLowerCase().replaceAll(/[^a-z]/g, ""));
+        target_element.style.position = "absolute";
+        target_element.style.top = 0;
+        section.prepend(target_element);
+
         records.push({
           anchor: entry_a,
           section: section,
-          page_no: page_no
+          page_no: page_no,
+          target_element: target_element
         });
       }
     });
     
     cb(records);
-    for (const {anchor, section, page_no} of records){
-      anchor.setAttribute("href", "#" + section.getAttribute("id"));
+    for (const {anchor, section, page_no, target_element} of records){
+      anchor.setAttribute("href", "#" + target_element.getAttribute("id"));
       const page = section.getAttribute("data-marpit-pagination");
       page_no.innerText = page;
     }
@@ -180,12 +235,20 @@ const MarpShims = (function(){
   pub.anchorHeadings = function(query){
     document.querySelectorAll(query).forEach(function(e){
       const section = e.closest("section");
+
+      const target_element = document.createElement("div");
+      target_element.setAttribute("id", "@"+e.innerText.toLowerCase().replaceAll(/[^a-z]/g, ""));
+      target_element.style.position = "absolute";
+      target_element.style.top = 0;
+      section.prepend(target_element);
+
       const html = e.innerHTML;
       e.innerHTML = "";
       const a = document.createElement("a");
       e.appendChild(a);
+
       a.innerHTML = html;
-      a.setAttribute("href", "#" + section.getAttribute("id"));
+      a.setAttribute("href", "#" + target_element.getAttribute("id"));
       a.classList.add("anchor_heading");
       a.classList.add(`ah_${e.nodeName}`);
     });
